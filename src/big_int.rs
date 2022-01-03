@@ -81,5 +81,9 @@ pub fn add_unsigned(lhs: &Vec<u32>, rhs: &Vec<u32>) -> Vec<u32> {
     if carry != 0 {
         to_return.push(carry);
     }
+    if let Some(i) = to_return.iter().rposition(|&x| x != 0) {
+        let the_length = i + 1;
+        to_return.truncate(the_length);
+    }
     to_return
 }
