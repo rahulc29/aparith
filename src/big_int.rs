@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::ops::*;
 
 #[repr(u8)]
@@ -86,4 +87,25 @@ pub fn add_unsigned(lhs: &Vec<u32>, rhs: &Vec<u32>) -> Vec<u32> {
         to_return.truncate(the_length);
     }
     to_return
+}
+
+pub fn compare_unsigned(a: &Vec<u32>, b: &Vec<u32>) -> Ordering {
+    if a.len() > b.len() {
+        return Ordering::Greater;
+    }
+    if a.len() < b.len() {
+        return Ordering::Less;
+    }
+    let len = a.len();
+    for i in (0..len).rev() {
+        let a_elem = a[i];
+        let b_elem = b[i];
+        if a_elem < b_elem {
+            return Ordering::Less;
+        }
+        if a_elem > b_elem {
+            return Ordering::Greater;
+        }
+    }
+    return Ordering::Equal;
 }

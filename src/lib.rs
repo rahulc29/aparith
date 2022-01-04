@@ -2,8 +2,9 @@ mod big_int;
 
 #[cfg(test)]
 mod tests {
+    use std::cmp::Ordering;
     use crate::big_int;
-    use crate::big_int::{add_unsigned, BigInt};
+    use crate::big_int::{add_unsigned, BigInt, compare_unsigned};
     use crate::big_int::Sign::Positive;
 
     #[test]
@@ -27,5 +28,22 @@ mod tests {
         let a: Vec<u32> = vec![3, 0, 3];
         let b: Vec<u32> = vec![3, 0, 3, 5];
         assert_eq!(add_unsigned(&a, &b), vec![6, 0, 6, 5]);
+    }
+
+    #[test]
+    fn compare_equals() {
+        let a: Vec<u32> = vec![0];
+        let b: Vec<u32> = vec![0];
+        assert_eq!(compare_unsigned(&a, &b), Ordering::Equal);
+        let a: Vec<u32> = vec![5; 5];
+        let b: Vec<u32> = vec![5; 5];
+        assert_eq!(compare_unsigned(&a, &b), Ordering::Equal);
+    }
+
+    #[test]
+    fn compare_same_length_unequals() {
+        let a: Vec<u32> = vec![5; 5];
+        let b: Vec<u32> = vec![4; 5];
+        assert_eq!(compare_unsigned(&a, &b), Ordering::Greater);
     }
 }
