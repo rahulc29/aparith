@@ -56,28 +56,7 @@ pub fn add_unsigned(lhs: &Vec<u32>, rhs: &Vec<u32>) -> Vec<u32> {
     } else {
         (lhs, rhs)
     };
-    let m = smaller.len();
-    let n = larger.len();
-    let mut carry = 0u32;
-    let mut to_return = vec![0u32; n];
-    for i in 0..m {
-        let (result, pri_overflow) = smaller[i].overflowing_add(larger[i]);
-        let (result, sec_overflow) = result.overflowing_add(carry);
-        to_return[i] = result;
-        carry = match (pri_overflow, sec_overflow) {
-            (true, true) => 2,
-            (true, false) | (false, true) => 1,
-            (false, false) => 0
-        };
-    }
-    for i in m..n {
-        let (result, overflow) = carry.overflowing_add(larger[i]);
-        to_return[i] = result;
-        carry = if overflow { 1 } else { 0 };
-    }
-    if carry != 0 {
-        to_return.push(carry);
-    }
+    let mut to_return = bounded_op_unsigned(&larger, &smaller, u32::overflowing_add);
     if let Some(i) = to_return.iter().rposition(|&x| x != 0) {
         let the_length = i + 1;
         to_return.truncate(the_length);
@@ -118,37 +97,35 @@ pub fn subtract_unsigned(a: &Vec<u32>, b: &Vec<u32>) -> Option<Vec<u32>> {
             Some(Vec::new()) // 0
         }
         Ordering::Greater => {
-            // `a` is now necessarily larger than `b`
-            let n = a.len();
-            let m = b.len();
-            // n >= m
-            let mut to_return = vec![0u32; n];
-            let mut borrow = 0u32;
-            for i in 0..m {
-                let (result, pri_overflow) = a[i].overflowing_sub(b[i]);
-                let (result, sec_overflow) = result.overflowing_sub(borrow);
-                match (pri_overflow, sec_overflow) {
-                    (true, true) => {
-                        borrow = 2;
-                    }
-                    (true, false) | (false, true) => {
-                        borrow = 1;
-                    }
-                    (false, false) => {
-                        borrow = 0;
-                    }
-                }
-                to_return[i] = result;
-            }
-            for i in m..n {
-                let (result, overflow) = a[i].overflowing_sub(borrow);
-                borrow = if overflow { 1 } else { 0 };
-                to_return[i] = result;
-            }
-            if borrow == 1 {
-                to_return.push(borrow);
-            }
-            Some(to_return)
+            Some(bounded_op_unsigned(&a, &b, u32::overflowing_sub))
         }
     };
+}
+
+fn bounded_op_unsigned<F>(larger: &[u32], smaller: &[u32], op: F) -> Vec<u32>
+    where F: Fn(u32, u32) -> (u32, bool) {
+    assert!(larger.len() >= smaller.len());
+    let n = larger.len();
+    let m = smaller.len();
+    let mut to_return = vec![0u32; n];
+    let mut overflow_counter = 0u32;
+    for i in 0..m {
+        let (result, pri_overflow) = op(larger[i], smaller[i]);
+        let (result, sec_overflow) = op(result, overflow_counter);
+        overflow_counter = match (pri_overflow, sec_overflow) {
+            (true, true) => 2,
+            (true, false) | (false, true) => 1,
+            (false, false) => 0
+        };
+        to_return[i] = result;
+    }
+    for i in m..n {
+        let (result, overflow) = op(larger[i], overflow_counter);
+        overflow_counter = if overflow { 1 } else { 0 };
+        to_return[i] = result;
+    }
+    if overflow_counter != 0 {
+        to_return.push(overflow_counter);
+    }
+    return to_return;
 }
