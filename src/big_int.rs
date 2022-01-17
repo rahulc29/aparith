@@ -56,11 +56,11 @@ pub fn add_unsigned(lhs: &Vec<u32>, rhs: &Vec<u32>) -> Vec<u32> {
     } else {
         (lhs, rhs)
     };
-    let n = smaller.len();
-    let m = larger.len();
+    let m = smaller.len();
+    let n = larger.len();
     let mut carry = 0u32;
-    let mut to_return = vec![0u32; m];
-    for i in 0..n {
+    let mut to_return = vec![0u32; n];
+    for i in 0..m {
         let (result, pri_overflow) = smaller[i].overflowing_add(larger[i]);
         let (result, sec_overflow) = result.overflowing_add(carry);
         to_return[i] = result;
@@ -70,14 +70,10 @@ pub fn add_unsigned(lhs: &Vec<u32>, rhs: &Vec<u32>) -> Vec<u32> {
             (false, false) => 0
         };
     }
-    for i in n..m {
+    for i in m..n {
         let (result, overflow) = carry.overflowing_add(larger[i]);
         to_return[i] = result;
-        if overflow {
-            carry = 1;
-        } else {
-            carry = 0;
-        }
+        carry = if overflow { 1 } else { 0 };
     }
     if carry != 0 {
         to_return.push(carry);
@@ -108,4 +104,51 @@ pub fn compare_unsigned(a: &Vec<u32>, b: &Vec<u32>) -> Ordering {
         }
     }
     return Ordering::Equal;
+}
+
+pub fn subtract_unsigned(a: &Vec<u32>, b: &Vec<u32>) -> Option<Vec<u32>> {
+    return match compare_unsigned(a, b) {
+        Ordering::Less => {
+            // a - b
+            // if a < b result will not be unsigned
+            // in that case we return `None`
+            None
+        }
+        Ordering::Equal => {
+            Some(Vec::new()) // 0
+        }
+        Ordering::Greater => {
+            // `a` is now necessarily larger than `b`
+            let n = a.len();
+            let m = b.len();
+            // n >= m
+            let mut to_return = vec![0u32; n];
+            let mut borrow = 0u32;
+            for i in 0..m {
+                let (result, pri_overflow) = a[i].overflowing_sub(b[i]);
+                let (result, sec_overflow) = result.overflowing_sub(borrow);
+                match (pri_overflow, sec_overflow) {
+                    (true, true) => {
+                        borrow = 2;
+                    }
+                    (true, false) | (false, true) => {
+                        borrow = 1;
+                    }
+                    (false, false) => {
+                        borrow = 0;
+                    }
+                }
+                to_return[i] = result;
+            }
+            for i in m..n {
+                let (result, overflow) = a[i].overflowing_sub(borrow);
+                borrow = if overflow { 1 } else { 0 };
+                to_return[i] = result;
+            }
+            if borrow == 1 {
+                to_return.push(borrow);
+            }
+            Some(to_return)
+        }
+    };
 }

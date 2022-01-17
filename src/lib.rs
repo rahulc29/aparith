@@ -4,7 +4,7 @@ mod big_int;
 mod tests {
     use std::cmp::Ordering;
     use crate::big_int;
-    use crate::big_int::{add_unsigned, BigInt, compare_unsigned};
+    use crate::big_int::{add_unsigned, BigInt, compare_unsigned, subtract_unsigned};
     use crate::big_int::Sign::Positive;
 
     #[test]
@@ -45,5 +45,26 @@ mod tests {
         let a: Vec<u32> = vec![5; 5];
         let b: Vec<u32> = vec![4; 5];
         assert_eq!(compare_unsigned(&a, &b), Ordering::Greater);
+    }
+
+    #[test]
+    fn subtract_equals() {
+        let a: Vec<u32> = vec![4; 5];
+        let b: Vec<u32> = a.clone();
+        assert_eq!(subtract_unsigned(&a, &b), Some(vec![]));
+    }
+
+    #[test]
+    fn same_length_subtraction() {
+        let a: Vec<u32> = vec![6, 0, 5];
+        let b: Vec<u32> = vec![9, 0, 4];
+        assert_eq!(subtract_unsigned(&a, &b), Some(vec![!0 - 2, !0, 0]));
+    }
+
+    #[test]
+    fn diff_length_subtraction() {
+        let a: Vec<u32> = vec![3, 4, 4, 7];
+        let b: Vec<u32> = vec![9, 6, 6];
+        assert_eq!(subtract_unsigned(&a, &b), Some(vec![!0 - 5, !0 - 2, !0 - 2, 6]));
     }
 }
