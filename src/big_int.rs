@@ -50,7 +50,7 @@ impl Add<BigInt> for BigInt {
     }
 }
 
-pub fn add_unsigned(lhs: &Vec<u32>, rhs: &Vec<u32>) -> Vec<u32> {
+pub fn add_unsigned(lhs: &[u32], rhs: &[u32]) -> Vec<u32> {
     let (smaller, larger) = if lhs.len() > rhs.len() {
         (rhs, lhs)
     } else {
@@ -64,7 +64,7 @@ pub fn add_unsigned(lhs: &Vec<u32>, rhs: &Vec<u32>) -> Vec<u32> {
     to_return
 }
 
-pub fn compare_unsigned(a: &Vec<u32>, b: &Vec<u32>) -> Ordering {
+pub fn compare_unsigned(a: &[u32], b: &[u32]) -> Ordering {
     if a.len() > b.len() {
         return Ordering::Greater;
     }
@@ -85,7 +85,7 @@ pub fn compare_unsigned(a: &Vec<u32>, b: &Vec<u32>) -> Ordering {
     return Ordering::Equal;
 }
 
-pub fn subtract_unsigned(a: &Vec<u32>, b: &Vec<u32>) -> Option<Vec<u32>> {
+pub fn subtract_unsigned(a: &[u32], b: &[u32]) -> Option<Vec<u32>> {
     return match compare_unsigned(a, b) {
         Ordering::Less => {
             // a - b
