@@ -67,4 +67,11 @@ mod tests {
         let b: Vec<u32> = vec![9, 6, 6];
         assert_eq!(subtract_unsigned(&a, &b), Some(vec![!0 - 5, !0 - 2, !0 - 2, 6]));
     }
+
+    #[test]
+    fn illegal_subtraction() {
+        let a: Vec<u32> = vec![9, 0, 4];
+        let b: Vec<u32> = vec![6, 0, 5];
+        assert_eq!(subtract_unsigned(&a, &b), None);
+    }
 }
